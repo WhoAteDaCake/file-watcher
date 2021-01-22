@@ -8,7 +8,7 @@ const doc = """
 File watcher utility
 
 Usage:
-  fwatcher (--dir <dir>)... [--event <event>]... [--all-events] -- <action>...
+  fwatcher (--dir <dir>)... ((--event <event>)... | --all-events) -- <action>...
 
 Options:
   -d <dir>, --dir <dir>         Directory to listen to
