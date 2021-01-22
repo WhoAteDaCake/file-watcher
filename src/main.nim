@@ -3,7 +3,7 @@ include cmd
 
 let state = parse_args()
 
-for dir in state.action:
+for dir in state.events:
   echo(fmt"Using {dir}")
 
 # type
