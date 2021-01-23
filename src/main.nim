@@ -19,7 +19,7 @@ proc parseLine(line: string): (string, string, string) =
 proc which(command: string): string =
   return execProcess(fmt"which {command}")[0 .. ^2]
 
-proc event_loop(watcher: Process, action: seq[string]): void =
+proc event_loop(watcher: Process, action: seq[string], runOnStart: bool): void =
   let stream = outputStream(watcher)
   var lastTime = none(string)
   var lastProc = none(Process)
@@ -28,13 +28,20 @@ proc event_loop(watcher: Process, action: seq[string]): void =
   let command = which(actionCmd)
   # Primary loop
   var line = ""
-  while stream.readLine(line):
-    let (path, event, time) = parseLine(line)
+  while true:
+    if not (lastTime.isNone and runOnStart):
+      discard stream.readLine(line)
+
+    let (path, event, time) = (
+      if lastTime.isNone and runOnStart:
+        ("", "", "")
+      else:
+        parseLine(line)
+    )
     # inotifywait creates two rows for each change
     # probably a bug
     if lastTime.isSome and lastTime.get() == time:
       continue
-    echo(fmt"{path} {event} {time}")
     # Process still running, kill it
     if lastProc.isSome and lastProc.get().running:
       echo("Killing previous process")
@@ -67,7 +74,7 @@ proc setup(state: State) =
   # Start primary watcher
   echo("Starting watcher loop")
   startProcess(which(watcher), "", all_args, nil, {})
-    .event_loop(state.action)
+    .event_loop(state.action, state.runOnStart)
 
 
 parse_args() |> setup
