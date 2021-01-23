@@ -29,13 +29,11 @@ proc event_loop(watcher: Process, action: seq[string], runOnStart: bool): void =
   # Primary loop
   var line = ""
   while true:
-    if not (lastTime.isNone and runOnStart):
-      discard stream.readLine(line)
-
     let (path, event, time) = (
       if lastTime.isNone and runOnStart:
         ("", "", "")
       else:
+        discard stream.readLine(line)
         parseLine(line)
     )
     # inotifywait creates two rows for each change
