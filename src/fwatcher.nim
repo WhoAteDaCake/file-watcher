@@ -3,7 +3,6 @@ import pipe
 import osproc
 import sequtils
 import streams
-import algorithm
 import strutils
 
 import zero_functional, unpack, options
@@ -29,6 +28,7 @@ proc event_loop(watcher: Process, action: seq[string], runOnStart: bool): void =
   # Primary loop
   var line = ""
   while true:
+    # Allow to run with empty paths on start
     let (path, event, time) = (
       if lastTime.isNone and runOnStart:
         ("", "", "")
