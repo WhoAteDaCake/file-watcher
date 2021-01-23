@@ -9,3 +9,6 @@ bin = @["main"]
 
 requires "nim >= 1.2.2"
 requires "docopt"
+requires "pipe"
+requires "zero_functional"
+requires "unpack"

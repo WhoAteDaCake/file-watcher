@@ -2,7 +2,7 @@ import docopt
 include state
 import strformat
 
-let allowedEvents = @["modify", "move_to", "moved_from", "move", "create", "delete"]
+let allowedEvents = @["modify", "moved_to", "moved_from", "move", "create", "delete"]
 
 const doc = """
 File watcher utility
@@ -15,7 +15,10 @@ Options:
   -e <event>, --event <event>   Event to watch for, one of:
                                   modify, move_to, moved_from, move, create, delete
   --all-events                  Listen to all events above
-  <action>                      Action to perform on file change
+
+  <action>                      Action to perform on file change.
+                                  use %p to receive path, which caused event
+                                  use %e to receive event
 """
 
 proc parse_args(): State =

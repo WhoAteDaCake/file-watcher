@@ -3,7 +3,7 @@
 ## Run example
 
 ```bash
-./main --dir=src --event=modify -- echo "test"
+./main --dir=src --all-events -- echo "test"
 ```
 
 ## Things to look at
