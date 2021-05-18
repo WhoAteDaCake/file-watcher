@@ -1,12 +1,27 @@
-# You can use this nim template to jump start your nim library or project.
+# file-watcher
 
-## Run example
+TODO: Write a description here
 
-```bash
-./main --dir=src --all-events -- echo "test"
-```
+## Installation
 
-## Things to look at
+TODO: Write installation instructions here
 
-* https://github.com/zero-functional/zero-functional
-* https://github.com/alehander92/gara
+## Usage
+
+TODO: Write usage instructions here
+
+## Development
+
+TODO: Write development instructions here
+
+## Contributing
+
+1. Fork it (<https://github.com/your-github-user/file-watcher/fork>)
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
+
+## Contributors
+
+- [WhoAteDaCake](https://github.com/your-github-user) - creator and maintainer

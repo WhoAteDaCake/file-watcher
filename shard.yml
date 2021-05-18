@@ -1,0 +1,13 @@
+name: file-watcher
+version: 0.1.0
+
+authors:
+  - WhoAteDaCake <doitsimplefy@gmail.com>
+
+targets:
+  file-watcher:
+    main: src/file-watcher.cr
+
+crystal: 1.0.0
+
+license: MIT
