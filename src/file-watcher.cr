@@ -1,7 +1,6 @@
 require "admiral"
+require "./constants"
 require "./runner"
-
-ALLOWED_EVENTS = ["modify", "moved_to", "moved_from", "move", "create", "delete"]
 
 class Command < Admiral::Command
   define_version "1.0.0"
@@ -25,13 +24,14 @@ class Command < Admiral::Command
     short: "d",
     required: true
 
-  define_flag timeout : Float32,
-    description: "How long should we wait from event to start of action",
+  define_flag timeout : Float64,
+    description: "Minimum timeout between events in seconds",
     long: "timeout",
-    short: "t"
+    short: "t",
+    default: 1.0
 
   define_flag events : Array(String),
-    description: "Event to watch for, one of: #{ALLOWED_EVENTS.join(", ")}",
+    description: "Event to watch for, one of: #{Constants::ALLOWED_EVENTS.join(", ")}",
     long: "event",
     short: "e"
 
@@ -46,7 +46,7 @@ class Command < Admiral::Command
       # Event verification
       events =
         if pf.all_events
-          ALLOWED_EVENTS
+          Constants::ALLOWED_EVENTS
         else
           pf.events
         end
@@ -55,7 +55,7 @@ class Command < Admiral::Command
         abort("Expected at least 1 event to listen for, found none")
       end
 
-      unexpected = events - ALLOWED_EVENTS
+      unexpected = events - Constants::ALLOWED_EVENTS
       if unexpected.size != 0
         abort("Unexpected events found: #{unexpected.join(", ")}")
       end
@@ -72,7 +72,8 @@ class Command < Admiral::Command
       end
     
       # Command
-      cmd = Process.find_executable(args[0])
+      command_name = args[0]
+      cmd = Process.find_executable(command_name)
       if cmd.nil?
         abort("Could not find executable: #{args[0]}")
       end
@@ -81,6 +82,7 @@ class Command < Admiral::Command
       runner = Runner.new(
         paths,
         events,
+        command_name,
         cmd,
         args,
         pf.timeout,
@@ -100,4 +102,5 @@ class Command < Admiral::Command
 end
 
 # Command.run "--help"
-Command.run "--on-start --dir ./test -a execute bash -c hello"
+Command.run
+# Command.run "--on-start --dir ./test -a execute bash -c echo 'Hi'"
