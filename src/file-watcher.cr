@@ -72,8 +72,7 @@ class Command < Admiral::Command
       end
     
       # Command
-      command_name = args[0]
-      cmd = Process.find_executable(command_name)
+      cmd = Process.find_executable(args[0])
       if cmd.nil?
         abort("Could not find executable: #{args[0]}")
       end
@@ -82,7 +81,8 @@ class Command < Admiral::Command
       runner = Runner.new(
         paths,
         events,
-        command_name,
+        # Cleaner as it leaves the executable name only
+        Path[cmd].basename,
         cmd,
         args,
         pf.timeout,
@@ -101,6 +101,4 @@ class Command < Admiral::Command
   end
 end
 
-# Command.run "--help"
 Command.run
-# Command.run "--on-start --dir ./test -a execute bash -c echo 'Hi'"

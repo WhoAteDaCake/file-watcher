@@ -1,6 +1,10 @@
 require "inotify"
 require "./constants"
 
+def now_clean()
+  Time.local.to_s("%Y-%m-%d %H:%M:%S")
+end
+
 class Runner
   def initialize(
     @paths : Array(Path),
@@ -50,7 +54,7 @@ class Runner
       while !proc.terminated?
         sleep 1
       end
-      STDOUT.printf("[%s] Terminated\n", @command_name)
+      STDOUT.printf("[%s] TERMINATED (%s)\n", @command_name, now_clean)
     end
     proc
   end
@@ -59,23 +63,42 @@ class Runner
     mask = Constants::LOOKUP[@events.shift]
     mask = @events.reduce(mask) { |m, key| m | Constants::LOOKUP[key] } 
 
+    time_channel = Channel(Time).new
     watcher = Inotify::Watcher.new(true)
     @paths.each do | path |
       watcher.watch(path.to_s, mask)
     end 
 
-    p! @args
-    
     watcher.on_event do | e |
-      # p! e
+      time_channel.send(Time.utc)
     end
-
+    
+    last_spawn = nil
     if @on_start
+      last_spawn = Time.utc
       @process = spawn_process(@cmd, @args)
     end
 
-    while true
-      sleep 10.seconds
+    loop do
+      slot = time_channel.receive
+      process = @process
+      if last_spawn.is_a?(Time)
+        change = Time.utc - last_spawn
+        change = change.total_seconds
+        if change < @timeout
+          # Skipping
+          if process.is_a?(Process) && !process.terminated?
+            next
+          end
+        end
+      end
+      # 
+      if process.is_a?(Process) && !process.terminated?
+        process.terminate
+        process.wait
+      end
+      last_spawn = Time.utc
+      @process = spawn_process(@cmd, @args)
     end
   end
 end
