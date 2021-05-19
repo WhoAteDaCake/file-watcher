@@ -1,0 +1,79 @@
+name: Crystal CI
+
+on:
+  push:
+    branches:
+      - main
+      - release-*
+    tags:
+      - *
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - container: crystallang/crystal:1.0.0
+            name: ubuntu
+          - container: crystallang/crystal:1.0.0-alpine
+            name: alpine
+    
+    container:
+      image: ${{ matrix.container }}
+
+    steps:
+      - name: "Install yaml deps"
+        if: ${{ matrix.name == 'alpine' }}
+        run: apk add --update yaml-dev yaml-static
+
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: shards install
+  
+      - name: Build file-watcher binary
+        run: |
+          mkdir dist
+          crystal build ./src/file-watcher.cr \
+            --release \
+            --progress \
+            --static \
+            -o ./dist/file-watcher-${{ matrix.name }}
+      - name: upload artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: file-watcher-${{ matrix.name }}
+          path: ./dist/file-watcher-${{ matrix.name }}
+
+  publish:
+    name: "Publish releases"
+    needs: build
+    runs-on: ubuntu-latest
+    if: startswith(github.ref, 'refs/tags/v')
+
+    env:
+      ARTIFACT_DIR: ./release
+
+    steps:
+      - name: "Setup directory"
+        run: mkdir -p ${{ env.ARTIFACT_DIR }}
+      # Artifacts
+      - name: Download artifacts [file-watcher-alpine]
+        uses: actions/download-artifact@master
+        with:
+          name: file-watcher-alpine
+          path: ${{ env.ARTIFACT_DIR }}
+      - name: Download artifacts [file-watcher-ubuntu]
+        uses: actions/download-artifact@master
+        with:
+          name: file-watcher-ubuntu
+          path: ${{ env.ARTIFACT_DIR }}
+
+      - uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          file: ${{ env.ARTIFACT_DIR }}/*
+          overwrite: true
+          file_glob: true     
