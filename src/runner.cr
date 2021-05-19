@@ -14,6 +14,7 @@ class Runner
     @args : Array(String),
     @timeout : Float64,
     @on_start : Bool,
+    @delay : Float64 | Nil,
     @process : Process | Nil
   )
   end
@@ -21,6 +22,9 @@ class Runner
   def spawn_process(cmd, args)
     out_read, out_write = IO.pipe
     err_read, err_write = IO.pipe
+
+    STDOUT.printf("[%s] SPAWNING (%s)\n", @command_name, now_clean)
+
     proc = Process.new(
       cmd,
       args,
@@ -96,6 +100,10 @@ class Runner
       if process.is_a?(Process) && !process.terminated?
         process.terminate
         process.wait
+      end
+      delay = @delay
+      if delay.is_a?(Float64)
+        sleep delay
       end
       last_spawn = Time.utc
       @process = spawn_process(@cmd, @args)

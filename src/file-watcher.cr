@@ -25,10 +25,14 @@ class Command < Admiral::Command
     required: true
 
   define_flag timeout : Float64,
-    description: "Minimum timeout between events in seconds",
+    description: "Minimum timeout between events (in seconds)",
     long: "timeout",
     short: "t",
-    default: 1.0
+    default: 0.5
+
+  define_flag delay : Float64,
+    description: "Delay after file change to execute command (in seconds)",
+    long: "delay"
 
   define_flag events : Array(String),
     description: "Event to watch for, one of: #{Constants::ALLOWED_EVENTS.join(", ")}",
@@ -87,6 +91,7 @@ class Command < Admiral::Command
         args,
         pf.timeout,
         pf.on_start,
+        pf.delay,
         nil
       )
       runner.run
