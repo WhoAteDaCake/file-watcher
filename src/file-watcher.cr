@@ -39,6 +39,16 @@ class Command < Admiral::Command
     long: "event",
     short: "e"
 
+  define_flag showcmd : Bool,
+    description: "Whether command name should be prefixed",
+    long: "showcmd",
+    default: false
+  
+  define_flag noclear : Bool,
+    description: "Maintain logs between restarts",
+    long: "noclear",
+    default: false
+
   class Execute < Admiral::Command
     def run
       args = @argv.map { |s| s.value }
@@ -92,6 +102,8 @@ class Command < Admiral::Command
         pf.timeout,
         pf.on_start,
         pf.delay,
+        pf.showcmd,
+        ! pf.noclear,
         nil
       )
       runner.run

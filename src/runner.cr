@@ -15,15 +15,28 @@ class Runner
     @timeout : Float64,
     @on_start : Bool,
     @delay : Float64 | Nil,
+    @show_cmd : Bool,
+    @clear_on_restart : Bool,
     @process : Process | Nil
   )
+    @command_name = 
+      if @show_cmd
+        "[#{@command_name}] "
+      else
+        ""
+      end
   end
 
   def spawn_process(cmd, args)
     out_read, out_write = IO.pipe
     err_read, err_write = IO.pipe
 
-    STDOUT.printf("[%s] SPAWNING (%s)\n", @command_name, now_clean)
+    if @clear_on_restart
+      STDOUT.printf("\e[1;1H\e[2J")
+      STDERR.printf("\e[1;1H\e[2J")
+    end
+
+    STDOUT.printf("%sSPAWNING (%s)\n", @command_name, now_clean)
 
     proc = Process.new(
       cmd,
@@ -39,7 +52,7 @@ class Runner
         if line.nil?
           break
         end
-        STDOUT.printf("[%s] %s", @command_name, line)
+        STDOUT.printf("%s%s", @command_name, line)
       end
     end
 
@@ -50,7 +63,7 @@ class Runner
         if line.nil? 
           break
         end
-        STDERR.printf("[%s] %s", @command_name, line)
+        STDERR.printf("%s%s", @command_name, line)
       end
     end
 
@@ -58,7 +71,7 @@ class Runner
       while !proc.terminated?
         sleep 1
       end
-      STDOUT.printf("[%s] TERMINATED (%s)\n", @command_name, now_clean)
+      STDOUT.printf("%sTERMINATED (%s)\n", @command_name, now_clean)
     end
     proc
   end
